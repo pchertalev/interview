@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Admin Page</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/home.css}"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<script>
+    function showForm(index) {
+        var hideForm;
+        var showForm;
+
+        if (index == 0) {
+            hideForm = document.forms[2];
+            showForm = document.forms[1];
+        } else {
+            hideForm = document.forms[1];
+            showForm = document.forms[2];
+        }
+        hideForm.style.display = "none";
+        showForm.style.display = "block";
+    }
+
+</script>
+
+<body>
+
+<div class="container">
+
+    <form th:action="@{/logout}" method="get">
+        <button class="btn btn-md btn-danger btn-block" name="registration"
+                type="Submit">Logout
+        </button>
+    </form>
+
+    <div class="panel-group" style="margin-top:40px">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <span th:utext="${userName}"></span>
+            </div>
+            <div class="panel-body">
+
+                <img th:src="@{/images/inclement-weather-450_orig.png}" class="img-responsive center-block" width="300"
+                     height="300" alt="Logo"/>
+                <br/>
+                <br/>
+
+                <select th:class="center-block" style="font-size: 200%;" onchange="showForm(this.selectedIndex);">
+                    <option value="geo" th:selected="${geoSelected} == true">Weather by geographic coordinates</option>
+                    <option value="city" th:selected="${geoSelected} == false">Weather by city</option>
+                </select>
+
+                <br/>
+                <br/>
+
+                <form th:id="form-geo" th:action="@{/admin/weather-geo}" method="POST" class="form-signin" th:hidden="${geoSelected} == false">
+
+                    <h3 class="form-signin-heading">Enter geographic coordinates</h3>
+                    <br/>
+
+                    <p th:if="${latError}" style="font-size: 20; color: #FF1C19; font-weight: bold;" th:text="${latError}"></p>
+                    <input type="text" id="lat" name="lat" th:placeholder="Lat" th:value="${lat}" class="form-control"/><br/>
+                    <p th:if="${lonError}" style="font-size: 20; color: #FF1C19; font-weight: bold;" th:text="${lonError}"></p>
+                    <input type="text" id="lon" name="lon" th:placeholder="Lon" th:value="${lon}" class="form-control"/><br/>
+
+                    <button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit"
+                            th:text="Submit"></button>
+                </form>
+
+                <form th:id="form-city" th:action="@{/admin/weather-city}" method="POST" class="form-signin"
+                      th:hidden="${geoSelected} == true">
+                    <h3 class="form-signin-heading">Enter city e.g. London or London,uk:</h3>
+                    <br/>
+
+                    <p th:if="${cityError}" style="font-size: 20; color: #FF1C19; font-weight: bold;" th:text="${cityError}"></p>
+                    <input type="text" id="city" name="city" th:placeholder="City" class="form-control"/> <br/>
+
+                    <button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit"
+                            th:text="Submit"></button>
+                </form>
+
+
+            </div>
+            <p class="admin-message-text text-center"
+               th:utext="${'There were ' + #lists.size(operations) + ' of last user operations'}"></p>
+
+            <div class="panel panel-default" th:if="${#lists.isEmpty(operations)} == false">
+
+                <!-- Default panel contents -->
+                <div class="panel-heading">
+
+                    <!-- Table -->
+                    <table class="table">
+                        <tr>
+                            <th>Execution time</th>
+                            <th>Operation</th>
+                            <th>Parameters</th>
+                            <th>Weather</th>
+                            <th>Result Message</th>
+                        </tr>
+                        <tr th:each="data, iterstat: ${operations}">
+                            <td th:text="${data.executionTime}"></td>
+                            <td th:text="${data.operationType}"></td>
+                            <td th:text="${data.params}"></td>
+                            <td><p th:if="${data.openWeatherMap}"
+                                     th:text="'Temp:'+${data.openWeatherMap.main.temp}+'K humidity:'+${data.openWeatherMap.main.humidity}+
+                                     '% pressure:'+${data.openWeatherMap.main.pressure}+' desc:'+${data.openWeatherMap.weather[0].description}"></p></td>
+                            <td>
+                                <a th:if="${#strings.length(data.result)} < 10" data-toggle="modal" th:attr="data-target='&#35;resultModal'+${iterstat.index}" data-whatever="@mdo"
+                                   th:text="${#strings.substring(data.result,0,10)}"></a>
+                                <a th:if="${#strings.length(data.result)} >= 10" data-toggle="modal" th:attr="data-target='&#35;resultModal'+${iterstat.index}" data-whatever="@mdo"
+                                   th:text="${#strings.substring(data.result,0,10)} + '...'"></a>
+                            </td>
+                            <td>
+                                <div class="modal fade" th:id="'resultModal'+${iterstat.index}" tabindex="-1" role="dialog" aria-labelledby="resultModalLabel">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                <h4 class="modal-title" id="resultModalLabel">Open weather response</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <pre th:text="${data.result}">
+                                                </pre>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
