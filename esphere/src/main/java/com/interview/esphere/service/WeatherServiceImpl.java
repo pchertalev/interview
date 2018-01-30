@@ -29,6 +29,11 @@ public class WeatherServiceImpl implements WeatherService {
     private final static String REQUEST_BY_GEO = "http://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%d&appid=%s";
 
     private final static String APPLID = "b3083359aa3c3fdb833ee97d7e669b1b";
+    private RestCallUtil restCallUtil;
+
+    public WeatherServiceImpl(RestCallUtil restCallUtil) {
+        this.restCallUtil = restCallUtil;
+    }
 
     @Override
     public OpenWeatherMap findByCityName(String cityName) throws WeatherException {
@@ -47,7 +52,7 @@ public class WeatherServiceImpl implements WeatherService {
             semaphore.acquire();
             LOGGER.debug("Request rest call format: {}", formattedString);
 
-            String response = RestCallUtil.restCall(formattedString);
+            String response = restCallUtil.restCall(formattedString);
             LOGGER.info("OpenWeatherMap returned response: {}", response);
 
             return objectMapperThreadLocal.get().readValue(response, OpenWeatherMap.class);

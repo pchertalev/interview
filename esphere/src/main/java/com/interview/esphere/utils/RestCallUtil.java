@@ -4,18 +4,20 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 
+@Component
 public class RestCallUtil {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RestCallUtil.class);
     private static final int MAX_REDIRECT_COUNT = 3;
 
-    public static String restCall(String requestUrl) throws RestCallException {
+    public String restCall(String requestUrl) throws RestCallException {
 
         int redirectCount = 0;
 
